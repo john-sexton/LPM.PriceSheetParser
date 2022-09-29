@@ -23,7 +23,7 @@ using (var excelPack = new ExcelPackage())
         var start = ws.Dimension.Start;
         var end = ws.Dimension.End;
 
-        var lpmMargin = new decimal(0.35);
+        var lpmMargin = new decimal(0.25);
         var repMargin = new decimal(0.05);
         var totalMargin = lpmMargin + repMargin;
         Console.WriteLine(totalMargin);
