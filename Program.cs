@@ -5,6 +5,11 @@ using OfficeOpenXml;
 using System.Drawing;
 using OfficeOpenXml.Drawing;
 
+decimal RoundNearstCent(decimal input)
+{
+    return Math.Ceiling(input * 20) / 20;
+}
+
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 using (var excelPack = new ExcelPackage())
 {
@@ -23,9 +28,12 @@ using (var excelPack = new ExcelPackage())
         var start = ws.Dimension.Start;
         var end = ws.Dimension.End;
 
-        var lpmMargin = new decimal(0.25);
+        var lpmMargin = new decimal(0.3);
         var repMargin = new decimal(0.05);
-        var totalMargin = lpmMargin + repMargin;
+        //var l1QtyMargin = new decimal(0.15);
+        var l2QtyMargin = new decimal(0.02);
+        var l3QtyMargin = new decimal(0.07);
+        var totalMargin = lpmMargin + repMargin;       
         Console.WriteLine(totalMargin);
         //var inProduct = false;
 
@@ -62,20 +70,35 @@ using (var excelPack = new ExcelPackage())
                 decimal costDec = decimal.Parse(cost);
                 if(costDec > 0)
                 {
+
+
+                    //decimal cost = decimal.Parse(item.Cost.Replace("$", ""));
+                    //decimal cost = new decimal(100);
+                    decimal price = RoundNearstCent((costDec * totalMargin) + costDec);
+                    decimal repCommision = price * repMargin;
+
+                    string Price = (price).ToString("$0.00");
+                    //string PriceL1 = (RoundNearstCent((price * l1QtyMargin) + price)).ToString("$0.00");
+                    string PriceL2 = (RoundNearstCent(price - (price * l2QtyMargin))).ToString("$0.00");
+                    string PriceL3 = (RoundNearstCent(price - (price * l3QtyMargin))).ToString("$0.00");
+                    string RepCommision = (repCommision).ToString("$0.00");
+                    string Profit = (price - (costDec + repCommision)).ToString("$0.00");
+
+
+
                     decimal repPriceInt = costDec * (totalMargin + 1);
 
 
                     decimal finalPrice = Math.Ceiling(repPriceInt * 20) / 20;
                     //Console.WriteLine($"Rep Price: {finalPrice.ToString("#.##")}");
+                    
+                    //decimal lpmProfit = (finalPrice - costDec) - repCommision;
 
-                    decimal repCommision = repMargin * finalPrice;
-                    decimal lpmProfit = (finalPrice - costDec) - repCommision;
+                    ws.Cells[row, 4].Value = Price;
 
-                    ws.Cells[row, 4].Value = finalPrice.ToString("$0.00");
-
-                    ws.Cells[row, 5].Value = costDec.ToString("$0.00");
-                    ws.Cells[row, 6].Value = repCommision.ToString("$0.00");
-                    ws.Cells[row, 7].Value = lpmProfit.ToString("$0.00");
+                    ws.Cells[row, 5].Value = $"10-25: {PriceL2}";
+                    ws.Cells[row, 6].Value = $"26+: {PriceL3}";
+                    //ws.Cells[row, 7].Value = lpmProfit.ToString("$0.00");
 
                 }
 
@@ -95,3 +118,5 @@ using (var excelPack = new ExcelPackage())
     //var pic = ws.Drawings["image2.jpeg"] as ExcelPicture;        
 
 }
+
+
